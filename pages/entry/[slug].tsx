@@ -6,6 +6,7 @@ import { Grid } from '@material-ui/core'
 import { Typography } from '@ui/Typography'
 import { PlantEntryInline } from '@components/PlantCollection'
 import { RichText } from '@components/RichText'
+import { useRouter } from 'next/dist/client/router'
 
 type pageProps = {
   plant: Plant
@@ -24,6 +25,11 @@ export default function PlantEntryPage({
   categories,
   otherEntries,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
+  const router = useRouter()
+
+  if (router.isFallback) {
+    return <Layout>Loading info...</Layout>
+  }
   return (
     <Layout>
       <Grid container spacing={4}>
@@ -43,28 +49,27 @@ export default function PlantEntryPage({
             <Typography variant="h5" component="h3" className="mb-4">
               Recent Posts
             </Typography>
-                {otherEntries?.map((otherEntry) => (
-                  <article className="mb-4" key={otherEntry.id}>
-                    <PlantEntryInline {...otherEntry} />
-                  </article>
-                ))}
-            )
+            {otherEntries?.map((otherEntry) => (
+              <article className="mb-4" key={otherEntry.id}>
+                <PlantEntryInline {...otherEntry} />
+              </article>
+            ))}
           </section>
           <section className="mt-10">
             <Typography variant="h5" component="h3" className="mb-4">
               Categories
             </Typography>
-              <ul className="list">
-                {categories.map((category) => (
-                  <li key={category.id}>
-                    <Link passHref href={`/category/${category.slug}`}>
-                      <Typography component="a" variant="h6">
-                        {category.title}
-                      </Typography>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            <ul className="list">
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <Link passHref href={`/category/${category.slug}`}>
+                    <Typography component="a" variant="h6">
+                      {category.title}
+                    </Typography>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </section>
         </Grid>
       </Grid>
@@ -79,7 +84,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
   }))
   return {
     paths: plantPaths,
-    fallback: false,
+    // fallback: false, // Muestra 404 para sitios que no se hayan generado
+    // fallback: 'blocking', // bloquea la pagina hasta que cargue la data y crea el page estático
+    fallback: true, // Permite tener un loading en la page mientras cagra
   }
 }
 
@@ -98,6 +105,7 @@ export const getStaticProps: GetStaticProps<pageProps> = async (context) => {
           categories,
           otherEntries,
         },
+        revalidate: 5 * 60, //seconds
       }
     } catch (e) {
       return {
