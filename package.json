@@ -37,7 +37,7 @@
     "@types/react": "^17.0.6",
     "autoprefixer": "^10.4.13",
     "clsx": "^1.2.1",
-    "graphql": "^15.5.0",
+    "graphql": "^16.6.0",
     "lodash": "^4.17.21",
     "postcss": "^8.4.21",
     "prettier": "^2.8.3",
