@@ -10,6 +10,7 @@ import { AuthorCard } from '@components/AuthorCard'
 
 import { getAuthorList, getPlantListByAuthor, QueryStatus } from '@api'
 import { IGetPlantListByAuthorQueryVariables } from '@api/generated/graphql'
+import { useRouter } from 'next/dist/client/router'
 
 type TopStoriesPageProps = {
   authors: Author[]
@@ -17,54 +18,59 @@ type TopStoriesPageProps = {
   status: 'error' | 'sucess'
 }
 
-export const getServerSideProps: GetServerSideProps<TopStoriesPageProps> =
-  async ({ params }) => {
-    const authorHandle = String(params?.author)
+export const getServerSideProps: GetServerSideProps<
+  TopStoriesPageProps
+> = async ({ params }) => {
+  const authorHandle = String(params?.author)
 
-    try {
-      const authors = await getAuthorList({ limit: 10 })
-      const doesAuthorExist = authors.some(
-        (author) => author.handle === authorHandle
-      )
+  try {
+    const authors = await getAuthorList({ limit: 10 })
+    const doesAuthorExist = authors.some(
+      (author) => author.handle === authorHandle
+    )
 
-      // Validates that the author exists and redirects to the first one in the list otherwise.
-      if (authors.length > 0 && !doesAuthorExist) {
-        const firstAuthor = authors[0].handle
-
-        return {
-          redirect: {
-            destination: `/top-stories/${firstAuthor}`,
-            permanent: false,
-          },
-        }
-      }
+    // Validates that the author exists and redirects to the first one in the list otherwise.
+    if (authors.length > 0 && !doesAuthorExist) {
+      const firstAuthor = authors[0].handle
 
       return {
-        props: {
-          authors,
-          currentAuthor: authorHandle,
-          status: 'sucess',
-        },
-      }
-    } catch (e) {
-      return {
-        props: {
-          authors: [],
-          currentAuthor: authorHandle,
-          status: 'error',
+        redirect: {
+          destination: `/top-stories/${firstAuthor}`,
+          permanent: false,
         },
       }
     }
+
+    return {
+      props: {
+        authors,
+        currentAuthor: authorHandle,
+        status: 'sucess',
+      },
+    }
+  } catch (e) {
+    return {
+      props: {
+        authors: [],
+        currentAuthor: authorHandle,
+        status: 'error',
+      },
+    }
   }
+}
 
 export default function TopStories({
   authors,
-  currentAuthor,
   status,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const [currentTab, setCurrentTab] = useState(currentAuthor)
+  const router = useRouter()
+  const currentAuthor = router.query.author
 
-  if (authors.length === 0 || status === 'error') {
+  if (
+    typeof currentAuthor !== 'string' ||
+    authors.length === 0 ||
+    status === 'error'
+  ) {
     return (
       <Layout>
         <main className="pt-10 px-6">
@@ -97,8 +103,12 @@ export default function TopStories({
         </div>
         <VerticalTabs
           tabs={tabs}
-          currentTab={currentTab}
-          onTabChange={(_, newValue) => setCurrentTab(newValue)}
+          currentTab={currentAuthor}
+          onTabChange={(_, newValue) => {
+            router.push(`/top-stories/${newValue}`, undefined, {
+              shallow: true,
+            })
+          }}
         />
       </main>
     </Layout>
