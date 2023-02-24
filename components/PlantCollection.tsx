@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import NextImage, { ImageLoaderProps } from 'next/image'
 import { Grid, GridProps } from '@ui/Grid'
 import { Typography } from '@ui/Typography'
 import { Button } from '@ui/Button'
+import Image from '@components/Image'
 
 import { Excerpt } from '@components/Excerpt'
 
@@ -48,38 +48,6 @@ export function PlantEntry({ plant, variant = 'square' }: PlantEntryType) {
       <Component {...plant} />
     </Grid>
   )
-}
-
-type ImageProps = {
-  layout: 'fixed' | 'intrinsic' | 'responsive' | undefined
-  src: string
-  width: number
-  height?: never
-  aspectRatio: '1:1' | '4:3' | '16:9'
-  fit?: 'pad' | 'fill' | 'crop'
-}
-
-function Image({ layout, src, width, aspectRatio, fit = 'pad' }: ImageProps) {
-  const height = calcAspectRatio(width, aspectRatio)
-
-  const loader = (args: ImageLoaderProps): string => {
-    return args.src
-  }
-
-  return (
-    <NextImage
-      layout={layout}
-      src={`${src}?h=${height}&w=${width}&fit=${fit}`}
-      width={width}
-      height={height}
-      loader={loader}
-    />
-  )
-}
-
-function calcAspectRatio(width: number, aspectRatio: string): number {
-  const ratio = +aspectRatio.split(':')[0] / +aspectRatio.split(':')[1]
-  return width / ratio
 }
 
 export function PlantEntrySquare({ image, plantName, slug }: Plant) {
