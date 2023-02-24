@@ -85,7 +85,13 @@ export function PlantEntryInline({
         <div
           className={`opacity-95 hover:opacity-100 flex items-end ${className}`}
         >
-          <img src={image.url} width={84} className="flex-none" />
+          <Image
+            src={image.url}
+            layout="fixed"
+            width={84}
+            aspectRatio="1:1"
+            fit="fill"
+          />
           <div className="pl-2 flex-auto">
             <Typography variant="h6" className="break-words">
               {plantName}
@@ -107,7 +113,12 @@ export function PlantEntryVertical({
     <div className="opacity-95 hover:opacity-100">
       <Link href={`/entry/${slug}`}>
         <a title={`Go to ${plantName}`}>
-          <img src={image.url} width={624} />
+          <Image
+            src={image.url}
+            width={624}
+            layout="intrinsic"
+            aspectRatio="1:1"
+          />
           <Typography variant="h2" className="break-words pt-4 px-4">
             {plantName}
           </Typography>

@@ -1,17 +1,56 @@
-import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from 'next'
+import { GetStaticProps, InferGetStaticPropsType, GetStaticPaths } from 'next'
 import Link from 'next/link'
-import { getCategoryList, getPlant, getPlantList } from '@api/index'
-import { Layout } from '@components/Layout'
-import { Grid } from '@material-ui/core'
-import { Typography } from '@ui/Typography'
-import { PlantEntryInline } from '@components/PlantCollection'
-import { RichText } from '@components/RichText'
-import { useRouter } from 'next/dist/client/router'
 
-type pageProps = {
+import { getPlant, getPlantList, getCategoryList } from '@api'
+
+import { Layout } from '@components/Layout'
+import { Typography } from '@ui/Typography'
+import { Grid } from '@ui/Grid'
+
+import { RichText } from '@components/RichText'
+import { AuthorCard } from '@components/AuthorCard'
+import { PlantEntryInline } from '@components/PlantCollection'
+import Image from '@components/Image'
+
+type PlantEntryPageProps = {
   plant: Plant
   otherEntries: Plant[]
   categories: Category[]
+}
+
+export const getStaticProps: GetStaticProps<PlantEntryPageProps> = async ({
+  params,
+}) => {
+  const slug = params?.slug
+
+  if (typeof slug !== 'string') {
+    return {
+      notFound: true,
+    }
+  }
+
+  try {
+    const plant = await getPlant(slug)
+
+    // Sidebar – This could be a single request since we are using GraphQL :)
+    const otherEntries = await getPlantList({
+      limit: 5,
+    })
+    const categories = await getCategoryList({ limit: 10 })
+
+    return {
+      props: {
+        plant,
+        otherEntries,
+        categories,
+      },
+      revalidate: 5 * 60, // once every five minutes
+    }
+  } catch (e) {
+    return {
+      notFound: true,
+    }
+  }
 }
 
 type PathType = {
@@ -20,22 +59,41 @@ type PathType = {
   }
 }
 
+export const getStaticPaths: GetStaticPaths = async () => {
+  // Match home query.
+  // @TODO how do we generate all of our pages if we don't know the number? 🤔
+  const plantEntriesToGenerate = await getPlantList({ limit: 10 })
+
+  const paths: PathType[] = plantEntriesToGenerate.map(({ slug }) => ({
+    params: {
+      slug,
+    },
+  }))
+
+  return {
+    paths,
+
+    // Block until the server gets its data. Like in Server side rendering
+    fallback: 'blocking',
+  }
+}
+
 export default function PlantEntryPage({
   plant,
-  categories,
   otherEntries,
+  categories,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
-  const router = useRouter()
-
-  if (router.isFallback) {
-    return <Layout>Loading info...</Layout>
-  }
   return (
     <Layout>
       <Grid container spacing={4}>
         <Grid item xs={12} md={8} lg={9} component="article">
           <figure>
-            <img src={plant.image.url} alt={plant?.image.title} />
+            <Image
+              width={952}
+              aspectRatio="4:3"
+              layout="intrinsic"
+              src={plant.image.url}
+            />
           </figure>
           <div className="px-12 pt-8">
             <Typography variant="h2">{plant.plantName}</Typography>
@@ -47,11 +105,11 @@ export default function PlantEntryPage({
         <Grid item xs={12} md={4} lg={3} component="aside">
           <section>
             <Typography variant="h5" component="h3" className="mb-4">
-              Recent Posts
+              Recent posts
             </Typography>
-            {otherEntries?.map((otherEntry) => (
-              <article className="mb-4" key={otherEntry.id}>
-                <PlantEntryInline {...otherEntry} />
+            {otherEntries.map((plantEntry) => (
+              <article className="mb-4" key={plantEntry.id}>
+                <PlantEntryInline {...plantEntry} />
               </article>
             ))}
           </section>
@@ -73,48 +131,9 @@ export default function PlantEntryPage({
           </section>
         </Grid>
       </Grid>
+      <section className="my-4 border-t-2 border-b-2 border-gray-200 pt-12 pb-7">
+        <AuthorCard {...plant.author} />
+      </section>
     </Layout>
   )
-}
-
-export const getStaticPaths: GetStaticPaths = async () => {
-  const plants = await getPlantList()
-  const plantPaths: PathType[] = plants.map((plant) => ({
-    params: { slug: plant.slug },
-  }))
-  return {
-    paths: plantPaths,
-    // fallback: false, // Muestra 404 para sitios que no se hayan generado
-    // fallback: 'blocking', // bloquea la pagina hasta que cargue la data y crea el page estático
-    fallback: true, // Permite tener un loading en la page mientras cagra
-  }
-}
-
-export const getStaticProps: GetStaticProps<pageProps> = async (context) => {
-  const slug = context.params?.slug
-  let plant: Plant | undefined
-
-  if (typeof slug === 'string') {
-    try {
-      plant = await getPlant(slug)
-      const categories = await getCategoryList()
-      const otherEntries = await getPlantList({ limit: 4 })
-      return {
-        props: {
-          plant,
-          categories,
-          otherEntries,
-        },
-        revalidate: 5 * 60, //seconds
-      }
-    } catch (e) {
-      return {
-        notFound: true,
-      }
-    }
-  }
-
-  return {
-    notFound: true,
-  }
 }
