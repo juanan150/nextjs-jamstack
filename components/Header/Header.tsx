@@ -2,16 +2,25 @@ import { PropsWithChildren } from 'react'
 import Link, { LinkProps } from 'next/link'
 import { NavBar } from '@ui/NavBar'
 import { Button } from '@ui/Button'
+import TopArea from './TopArea'
+
+import { PreviewModeBanner } from './PreviewModeBanner'
 
 export function Header() {
   return (
-    <div className="mx-auto" style={{ maxWidth: '98%' }}>
-      <NavBar title="🌿 Plantpedia">
-        <div>
-          <NavLink href="/top-stories">Top Stories</NavLink>
-        </div>
-      </NavBar>
-    </div>
+    <>
+      <PreviewModeBanner />
+      <div className="px-8 py-3">
+        <TopArea />
+      </div>
+      <div className="mx-auto" style={{ maxWidth: '98%' }}>
+        <NavBar title="🌿 Plantpedia">
+          <div>
+            <NavLink href="/top-stories">Top Stories</NavLink>
+          </div>
+        </NavBar>
+      </div>
+    </>
   )
 }
 

@@ -20,7 +20,6 @@ export default function Image({ layout = 'responsive', src, width, aspectRatio, 
   const loader = (args: ImageLoaderProps): string => {
     return args.src
   }
-  console.log(src, width, aspectRatio, height)
   return (
     <NextImage
       layout={layout}

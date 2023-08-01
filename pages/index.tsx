@@ -9,6 +9,15 @@ type HomeProps = {
   plants: Plant[]
 }
 
+export const getStaticProps: GetStaticProps<HomeProps> = async ({ locale }) => {
+  const plants = await getPlantList({ limit: 10, locale })
+
+  return {
+    props: { plants },
+    revalidate: 5 * 60, // once every five minutes
+  }
+}
+
 export default function Home({
   plants,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
@@ -26,12 +35,3 @@ export default function Home({
   )
 }
 
-export const getStaticProps: GetStaticProps<HomeProps> = async () => {
-  const plants = await getPlantList({ limit: 10 })
-  return {
-    props: {
-      plants,
-      revalidate: 5 * 60, //seconds
-    },
-  }
-}
