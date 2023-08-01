@@ -6,7 +6,6 @@ const DEFAULT_LOCALE = 'es'
 const PREFERRED_LOCALE_COOKIE = 'NEXT_LOCALE'
 
 const language: NextApiHandler = (req, res) => {
-  console.log(req.method)
   if (req.method === 'GET') {
     const preferredLocale =
       req?.cookies[PREFERRED_LOCALE_COOKIE] || DEFAULT_LOCALE
