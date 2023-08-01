@@ -11,7 +11,7 @@ import { Grid } from '@ui/Grid'
 import { RichText } from '@components/RichText'
 import { AuthorCard } from '@components/AuthorCard'
 import { PlantEntryInline } from '@components/PlantCollection'
-import { Image } from '@components/Image'
+import Image from '@components/Image'
 
 type PlantEntryPageProps = {
   plant: Plant
@@ -103,7 +103,6 @@ export default function PlantEntryPage({
               aspectRatio="4:3"
               layout="intrinsic"
               src={plant.image.url}
-              alt={plant.image.title}
             />
           </figure>
           <div className="px-12 pt-8">

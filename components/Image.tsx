@@ -1,66 +1,33 @@
-import { useCallback } from 'react'
-import NextImage, {
-  ImageLoaderProps,
-  ImageProps as NextImageProps,
-} from 'next/image'
+import NextImage, { ImageLoaderProps } from 'next/image'
 
 type ImageProps = {
+  layout?: 'fixed' | 'intrinsic' | 'responsive' | undefined
+  src: string
   width: number
   height?: never
-  layout: ImageLayout
-  aspectRatio: AspectRatio
-  fit?: ImageFit
-} & DistributiveOmit<NextImageProps, 'height'>
+  aspectRatio: '1:1' | '4:3' | '16:9'
+  fit?: 'pad' | 'fill' | 'crop'
+}
 
-export function Image({
-  width,
-  fit = 'fill',
-  aspectRatio,
-  ...nextImageProps
-}: ImageProps) {
-  const height = calcAspectRatio(aspectRatio, width)
+function calcAspectRatio(width: number, aspectRatio: string): number {
+  const ratio = +aspectRatio.split(':')[0] / +aspectRatio.split(':')[1]
+  return width / ratio
+}
 
-  const imageLoader = useCallback(
-    (loaderArgs: ImageLoaderProps) => {
-      const h = calcAspectRatio(aspectRatio, loaderArgs.width)
+export default function Image({ layout = 'responsive', src, width, aspectRatio, fit = 'pad' }: ImageProps) {
+  const height = calcAspectRatio(width, aspectRatio)
 
-      return `${loaderArgs.src}?w=${loaderArgs.width}&h=${h}&fit=${fit}`
-    },
-    [aspectRatio, fit]
-  )
-
+  const loader = (args: ImageLoaderProps): string => {
+    return args.src
+  }
+  console.log(src, width, aspectRatio, height)
   return (
     <NextImage
-      {...nextImageProps}
+      layout={layout}
+      src={`${src}?h=${height}&w=${width}&fit=${fit}`}
       width={width}
       height={height}
-      loader={imageLoader}
+      loader={loader}
     />
   )
-}
-
-export type ImageFit = 'pad' | 'fill' | 'scale' | 'crop' | 'thumb'
-
-export type AspectRatio = '16:9' | '4:3' | '1:1' | '3:2' | '9:12'
-
-// Next.js sadly don't export it
-export type ImageLayout = 'fill' | 'fixed' | 'intrinsic' | 'responsive'
-
-// https://davidgomes.com/pick-omit-over-union-types-in-typescript/
-type DistributiveOmit<T, K extends keyof T> = T extends unknown
-  ? Omit<T, K>
-  : never
-
-const aspectRatioToRatio: Record<AspectRatio, number> = {
-  '1:1': 1,
-  '16:9': 9 / 16,
-  '4:3': 3 / 4,
-  '3:2': 2 / 3,
-  '9:12': 12 / 9,
-}
-
-function calcAspectRatio(aspectRatio: AspectRatio, width: number): number {
-  const ratio = aspectRatioToRatio[aspectRatio]
-
-  return Math.floor(width * ratio)
 }

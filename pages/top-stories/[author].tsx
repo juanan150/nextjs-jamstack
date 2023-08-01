@@ -18,39 +18,46 @@ type TopStoriesPageProps = {
   authors: Author[]
 }
 
-export const getServerSideProps: GetServerSideProps<TopStoriesPageProps> =
-  async ({ params }) => {
-    const authorHandle = String(params?.author)
+export const getServerSideProps: GetServerSideProps<
+  TopStoriesPageProps
+> = async ({ params }) => {
+  const authorHandle = String(params?.author)
 
-    try {
-      const authors = await getAuthorList({ limit: 10 })
-      const doesAuthorExist = authors.some(
-        (author) => author.handle === authorHandle
-      )
+  try {
+    const authors = await getAuthorList({ limit: 10 })
+    const doesAuthorExist = authors.some(
+      (author) => author.handle === authorHandle
+    )
 
-      // Validates that the author exists and redirects to the first one in the list otherwise.
-      if (authors.length > 0 && !doesAuthorExist) {
-        const firstAuthor = authors[0].handle
-
-        return {
-          redirect: {
-            destination: `/top-stories/${firstAuthor}`,
-            permanent: false,
-          },
-        }
-      }
+    // Validates that the author exists and redirects to the first one in the list otherwise.
+    if (authors.length > 0 && !doesAuthorExist) {
+      const firstAuthor = authors[0].handle
 
       return {
-        props: {
-          authors,
+        redirect: {
+          destination: `/top-stories/${firstAuthor}`,
+          permanent: false,
         },
       }
-    } catch (e) {
-      return {
-        notFound: true,
-      }
+    }
+
+    return {
+      props: {
+        authors,
+        currentAuthor: authorHandle,
+        status: 'sucess',
+      },
+    }
+  } catch (e) {
+    return {
+      props: {
+        authors: [],
+        currentAuthor: authorHandle,
+        status: 'error',
+      },
     }
   }
+}
 
 export default function TopStories({
   authors,

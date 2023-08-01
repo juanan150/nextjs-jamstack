@@ -1,9 +1,8 @@
 import { GetStaticProps, InferGetStaticPropsType } from 'next'
-
 import { Layout } from '@components/Layout'
-import { getPlantList } from '@api'
-import { Hero } from '@components/Hero'
 import { PlantCollection } from '@components/PlantCollection'
+import { getPlantList } from '@api/index'
+import { Hero } from '@components/Hero'
 import { Authors } from '@components/Authors'
 
 type HomeProps = {
@@ -31,10 +30,8 @@ export default function Home({
         variant="vertical"
         className="mb-24"
       />
-      <PlantCollection
-        plants={plants.length > 8 ? plants.slice(3, 9) : plants}
-        variant="square"
-      />
+      <PlantCollection plants={plants} variant="square" />
     </Layout>
   )
 }
+
