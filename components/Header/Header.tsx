@@ -4,9 +4,12 @@ import { NavBar } from '@ui/NavBar'
 import { Button } from '@ui/Button'
 import TopArea from './TopArea'
 
+import { useTranslation } from 'next-i18next'
+
 import { PreviewModeBanner } from './PreviewModeBanner'
 
 export function Header() {
+  const { t } = useTranslation(['header'])
   return (
     <>
       <PreviewModeBanner />
@@ -16,7 +19,7 @@ export function Header() {
       <div className="mx-auto" style={{ maxWidth: '98%' }}>
         <NavBar title="🌿 Plantpedia">
           <div>
-            <NavLink href="/top-stories">Top Stories</NavLink>
+            <NavLink href="/top-stories">{t('text')}</NavLink>
           </div>
         </NavBar>
       </div>
