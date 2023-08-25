@@ -2,6 +2,28 @@ import { Grid } from '@ui/Grid'
 import { Typography } from '@ui/Typography'
 import { Button } from '@ui/Button'
 import { useRouter } from 'next/router'
+import { useTranslation } from 'next-i18next'
+import { signIn, signOut, useSession } from 'next-auth/client'
+
+const LoginLogout = () => {
+  const { t } = useTranslation(['common'])
+  const [session, loading] = useSession()
+
+  if (loading){
+    return null
+  }
+
+  if (!session) {
+    return <Button onClick={() => signIn()}>{t('signIn')}</Button>
+  }
+
+  return (
+    <>
+      <span>{session?.user?.name}</span>
+      <Button onClick={() => signOut()}>{t('signOut')}</Button>
+    </>
+  )
+}
 
 const TopArea = () => {
   const { locales, locale } = useRouter()
@@ -13,7 +35,9 @@ const TopArea = () => {
 
   return (
     <Grid container justify="space-between">
-      <Grid item></Grid>
+      <Grid item>
+        <LoginLogout />
+      </Grid>
       <Grid item>
         <Typography variant="body2" component="span" className="pr-3">
           language:
